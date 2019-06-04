@@ -9,39 +9,44 @@ import java.util.Optional
 interface ToDoRepository {
 
     //region Commands
-    fun addToDo(request: AddToDoRequest): ToDo
+    fun add(request: AddToDoRequest): ToDo
 
-    fun editToDo(request: EditToDoRequest): ToDo
+    fun edit(request: EditToDoRequest): ToDo
 
-    fun completeToDo(id: String): ToDo
+    fun complete(id: String): ToDo
 
-    fun revertToDo(id: String): ToDo
+    fun revert(id: String): ToDo
 
-    fun removeToDo(id: String): ToDo
+    fun remove(id: String): ToDo
     //end region
 
     //region Queries
-    fun findToDosByTags(tags: Set<String>): List<ToDo>
+    fun searchByContent(searchString: String, sortOrder: SortOrder, cursor: Cursor): List<ToDo>
 
-    fun searchToDos(searchString: String): List<ToDo>
+    fun getById(id: String): ToDo?
 
-    fun getToDoById(id: String): Optional<ToDo>
+    fun getAllCurrent(cursor: Cursor, time: LocalDateTime): List<ToDo>
 
-    fun getExpiredToDos(date: LocalDateTime): List<ToDo>
+    fun getAllOverdue(cursor: Cursor, time: LocalDateTime): List<ToDo>
 
-    fun getActiveToDos(date: LocalDateTime): List<ToDo>
+    fun getAllCompleted(cursor: Cursor): List<ToDo>
     //endregion
 }
 
+data class Cursor(val offset: Int = 0, val limit: Int = 1)
+
+enum class SortOrder {
+    ASCENDING_DUE_DATE, DESCENDING_DUE_DATE
+}
+
 data class EditToDoRequest(
-    val id: String, val newTitle: String, val newContent: String,
-    val newTags: Set<String>, val newEndDate: LocalDateTime
+    val id: String, val newContent: String,
+    val newDueDate: LocalDateTime?
 )
 
 data class AddToDoRequest(
-    val title: String, val content: String,
-    val createdOn: LocalDateTime, val endDate: LocalDateTime,
-    val tags: Set<String>
+    val content: String,
+    val createdOn: LocalDateTime, val dueDate: LocalDateTime?
 )
 
 data class ToDoNotFoundException(val id: String) : RuntimeException()

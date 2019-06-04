@@ -1,11 +1,11 @@
 package com.tsbonev.todo.adapter.nitrite
 
-import com.tsbonev.todo.core.AddToDoRequest
-import com.tsbonev.todo.core.EditToDoRequest
-import com.tsbonev.todo.core.IdGenerator
-import com.tsbonev.todo.core.ToDoNotFoundException
+import com.tsbonev.todo.core.*
 import com.tsbonev.todo.helper.expecting
 import org.dizitart.kno2.nitrite
+import org.hamcrest.CoreMatchers.notNullValue
+import org.hamcrest.CoreMatchers.nullValue
+import org.hamcrest.Matchers.containsInAnyOrder
 import org.jmock.AbstractExpectations.returnValue
 import org.jmock.integration.junit4.JUnitRuleMockery
 import org.junit.Rule
@@ -40,14 +40,14 @@ class NitriteToDoRepositoryTest {
             will(returnValue("::id::"))
         }
 
-        val createdToDo = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
+        val createdToDo = repo.add(AddToDoRequest( "::content::", date, date))
 
-        repo.completeToDo("::id::")
+        repo.complete("::id::")
 
-        val foundToDo = repo.getToDoById("::id::")
+        val foundToDo = repo.getById("::id::")
 
-        assertThat(foundToDo.isPresent, Is(true))
-        assertThat(foundToDo.get(), Is(createdToDo.copy(completed = true)))
+        assertThat(foundToDo, Is(notNullValue()))
+        assertThat(foundToDo, Is(createdToDo.copy(status = ToDoStatus.COMPLETED)))
     }
 
     @Test
@@ -57,21 +57,19 @@ class NitriteToDoRepositoryTest {
             will(returnValue("::id::"))
         }
 
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
+        repo.add(AddToDoRequest( "::content::", date, date))
 
-        val editedToDo = repo.editToDo(EditToDoRequest("::id::",
-            "::newTitle::", "::newContent::", setOf("::newTags::"), date.plusDays(1)))
+        val editedToDo = repo.edit(EditToDoRequest("::id::", "::newContent::", date.plusDays(1)))
 
-        val foundToDo = repo.getToDoById("::id::")
+        val foundToDo = repo.getById("::id::")
 
-        assertThat(foundToDo.isPresent, Is(true))
-        assertThat(foundToDo.get(), Is(editedToDo))
+        assertThat(foundToDo, Is(notNullValue()))
+        assertThat(foundToDo, Is(editedToDo))
     }
 
     @Test(expected = ToDoNotFoundException::class)
     fun `Edit todo when not found`() {
-        repo.editToDo(EditToDoRequest("::id::",
-            "::newTitle::", "::newContent::", setOf("::newTags::"), date.plusDays(1)))
+        repo.edit(EditToDoRequest("::id::", "::newContent::", date.plusDays(1)))
     }
 
     @Test
@@ -81,83 +79,32 @@ class NitriteToDoRepositoryTest {
             will(returnValue("::id::"))
         }
 
-        val createdToDo = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
+        val createdToDo = repo.add(AddToDoRequest( "::content::", date, date))
 
-        repo.completeToDo("::id::")
-        repo.revertToDo("::id::")
+        repo.complete("::id::")
+        repo.revert("::id::")
 
-        val foundToDo = repo.getToDoById("::id::")
+        val foundToDo = repo.getById("::id::")
 
-        assertThat(foundToDo.isPresent, Is(true))
-        assertThat(foundToDo.get(), Is(createdToDo))
+        assertThat(foundToDo, Is(notNullValue()))
+        assertThat(foundToDo, Is(createdToDo))
     }
 
     @Test(expected = ToDoNotFoundException::class)
     fun `Revert todo when not found`() {
-        repo.removeToDo("::id::")
+        repo.remove("::id::")
     }
 
     @Test(expected = ToDoNotFoundException::class)
     fun `Complete todo when not found`() {
-        repo.completeToDo("::id::")
+        repo.complete("::id::")
     }
 
     @Test
     fun `Find todo by id when none present`() {
-        val todo = repo.getToDoById("::id::")
+        val todo = repo.getById("::id::")
 
-        assertThat(todo.isPresent, Is(false))
-    }
-
-    @Test
-    fun `Find todo by single tags`() {
-        context.expecting {
-            oneOf(idGenerator).generateId()
-            will(returnValue("::id::"))
-        }
-
-        val createdToDo = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
-
-        val toDos = repo.findToDosByTags(setOf("::tag-1::"))
-
-        assertThat(toDos.contains(createdToDo), Is(true))
-    }
-
-    @Test
-    fun `Find todo by multiple tags`() {
-        context.expecting {
-            oneOf(idGenerator).generateId()
-            will(returnValue("::id-1::"))
-
-            oneOf(idGenerator).generateId()
-            will(returnValue("::id-2::"))
-        }
-
-        val createdToDo1 = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
-        val createdToDo2 = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-2::")))
-
-        val toDos = repo.findToDosByTags(setOf("::tag-1::", "::tag-2::"))
-
-        assertThat(toDos.contains(createdToDo1), Is(true))
-        assertThat(toDos.contains(createdToDo2), Is(true))
-    }
-
-    @Test
-    fun `Find todo by tags when not found`() {
-        context.expecting {
-            oneOf(idGenerator).generateId()
-            will(returnValue("::id-1::"))
-
-            oneOf(idGenerator).generateId()
-            will(returnValue("::id-2::"))
-        }
-
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-2::")))
-
-        val toDos = repo.findToDosByTags(setOf("::tag-3::"))
-
-        assertThat(toDos.isEmpty(), Is(true))
+        assertThat(todo, Is(nullValue()))
     }
 
     @Test
@@ -170,21 +117,19 @@ class NitriteToDoRepositoryTest {
             will(returnValue("::id-2::"))
         }
 
-        val createdToDo1 = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
-        val createdToDo2 = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-2::", "::banana::")))
+        val createdToDo1 = repo.add(AddToDoRequest("::content::", date, date))
+        val createdToDo2 = repo.add(AddToDoRequest("::content:: banana", date, date))
 
-        val toDos1 = repo.searchToDos("::content:: ::title:: ::tag-1::")
+        val toDos1 = repo.searchByContent("::content::", SortOrder.ASCENDING_DUE_DATE, Cursor())
 
-        val toDos2= repo.searchToDos("banana")
+        val toDos2= repo.searchByContent("banana", SortOrder.ASCENDING_DUE_DATE, Cursor())
 
-        assertThat(toDos1.contains(createdToDo1), Is(true))
-        assertThat(toDos1.contains(createdToDo2), Is(true))
-
+        assertThat(toDos1, Is(containsInAnyOrder(createdToDo1, createdToDo2)))
         assertThat(toDos2, Is(listOf(createdToDo2)))
     }
 
     @Test
-    fun `Search todo when noe found`() {
+    fun `Search todo when none found`() {
         context.expecting {
             oneOf(idGenerator).generateId()
             will(returnValue("::id-1::"))
@@ -193,10 +138,10 @@ class NitriteToDoRepositoryTest {
             will(returnValue("::id-2::"))
         }
 
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-2::", "::banana::")))
+        repo.add(AddToDoRequest( "::content::", date, date))
+        repo.add(AddToDoRequest( "::content::", date, date))
 
-        val toDos = repo.searchToDos("::nonmatch::")
+        val toDos = repo.searchByContent("::nonmatch::", SortOrder.ASCENDING_DUE_DATE, Cursor())
 
         assertThat(toDos.isEmpty(), Is(true))
     }
@@ -208,79 +153,79 @@ class NitriteToDoRepositoryTest {
             will(returnValue("::id::"))
         }
 
-        val createdToDo = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
+        val createdToDo = repo.add(AddToDoRequest( "::content::", date, date))
 
-        val removedToDo = repo.removeToDo("::id::")
+        val removedToDo = repo.remove("::id::")
 
-        val foundToDo = repo.getToDoById("::id::")
+        val foundToDo = repo.getById("::id::")
 
-        assertThat(foundToDo.isPresent, Is(false))
+        assertThat(foundToDo, Is(nullValue()))
         assertThat(removedToDo, Is(createdToDo))
     }
 
     @Test(expected = ToDoNotFoundException::class)
     fun `Remove todo when not found`() {
-        repo.removeToDo("::id::")
+        repo.remove("::id::")
     }
 
 
     @Test
-    fun `Get expired todos`() {
+    fun `Get overdue todos`() {
         context.expecting {
             oneOf(idGenerator).generateId()
             will(returnValue("::id::"))
         }
 
-        val createdToDo = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
+        val createdToDo = repo.add(AddToDoRequest("::content::", date, date))
 
-        val expiredToDos = repo.getExpiredToDos(date.plusDays(1))
+        val overdueToDos = repo.getAllOverdue(Cursor(), date.plusDays(1))
 
-        assertThat(expiredToDos.contains(createdToDo), Is(true))
+        assertThat(overdueToDos.contains(createdToDo), Is(true))
     }
 
     @Test
-    fun `Get expired todos when completed`() {
+    fun `Get overdue todos when completed`() {
         context.expecting {
             oneOf(idGenerator).generateId()
             will(returnValue("::id::"))
         }
 
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date, setOf("::tag-1::", "::tag-2::")))
+        repo.add(AddToDoRequest( "::content::", date, date))
 
-        repo.completeToDo("::id::")
+        repo.complete("::id::")
 
-        val expiredToDos = repo.getExpiredToDos(date.plusDays(1))
+        val overdueToDos = repo.getAllOverdue(Cursor(), date.plusDays(1))
 
-        assertThat(expiredToDos.isEmpty(), Is(true))
+        assertThat(overdueToDos.isEmpty(), Is(true))
     }
 
     @Test
-    fun `Get active todos`() {
+    fun `Get current todos`() {
         context.expecting {
             oneOf(idGenerator).generateId()
             will(returnValue("::id::"))
         }
 
-        val createdToDo = repo.addToDo(AddToDoRequest("::title::", "::content::", date, date.plusDays(1), setOf("::tag-1::", "::tag-2::")))
+        val createdToDo = repo.add(AddToDoRequest( "::content::", date, date.plusDays(1)))
 
-        val expiredToDos = repo.getActiveToDos(date)
+        val overdueToDos = repo.getAllCurrent(Cursor(), date)
 
-        assertThat(expiredToDos.contains(createdToDo), Is(true))
+        assertThat(overdueToDos.contains(createdToDo), Is(true))
     }
 
     @Test
-    fun `Get active todos when completed`() {
+    fun `Get current todos when completed`() {
         context.expecting {
             oneOf(idGenerator).generateId()
             will(returnValue("::id::"))
         }
 
-        repo.addToDo(AddToDoRequest("::title::", "::content::", date, date.plusDays(1), setOf("::tag-1::", "::tag-2::")))
+        repo.add(AddToDoRequest("::content::", date, date.plusDays(1)))
 
-        repo.completeToDo("::id::")
+        repo.complete("::id::")
 
-        val expiredToDos = repo.getActiveToDos(date)
+        val overdueToDos = repo.getAllCurrent(Cursor(), date)
 
-        assertThat(expiredToDos.isEmpty(), Is(true))
+        assertThat(overdueToDos.isEmpty(), Is(true))
     }
 }

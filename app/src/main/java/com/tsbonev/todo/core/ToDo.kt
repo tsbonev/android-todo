@@ -6,8 +6,11 @@ import java.time.LocalDateTime
  * @author Tsvetozar Bonev (tsbonev@gmail.com)
  */
 data class ToDo(val id: String,
-                val endDate: LocalDateTime,
-                val title: String,
                 val content: String,
-                val tags : Set<String>,
-                val completed: Boolean = false)
+                val dueDate: LocalDateTime?,
+                val createdOn: LocalDateTime,
+                val status: ToDoStatus)
+
+enum class ToDoStatus {
+    COMPLETED, CURRENT
+}

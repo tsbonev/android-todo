@@ -10,9 +10,9 @@ import org.jmock.AbstractExpectations.returnValue
 import org.jmock.integration.junit4.JUnitRuleMockery
 import org.junit.Rule
 import org.junit.Test
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneOffset
 import org.hamcrest.CoreMatchers.`is` as Is
 import org.junit.Assert.assertThat
 

@@ -13,8 +13,7 @@ import org.dizitart.no2.objects.Indices
 import org.dizitart.no2.objects.ObjectRepository
 import org.dizitart.no2.objects.filters.ObjectFilters
 import org.dizitart.no2.objects.filters.ObjectFilters.not
-import java.time.LocalDateTime
-import java.util.Optional
+import org.threeten.bp.LocalDateTime
 
 /**
  * @author Tsvetozar Bonev (tsbonev@gmail.com)

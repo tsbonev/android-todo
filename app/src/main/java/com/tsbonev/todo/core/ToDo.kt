@@ -1,6 +1,6 @@
 package com.tsbonev.todo.core
 
-import java.time.LocalDateTime
+import org.threeten.bp.LocalDateTime
 
 /**
  * @author Tsvetozar Bonev (tsbonev@gmail.com)

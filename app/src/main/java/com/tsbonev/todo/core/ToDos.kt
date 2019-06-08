@@ -5,7 +5,7 @@ import org.threeten.bp.LocalDateTime
 /**
  * @author Tsvetozar Bonev (tsbonev@gmail.com)
  */
-interface ToDoRepository {
+interface ToDos {
 
     //region Commands
     fun add(request: AddToDoRequest): ToDo
@@ -20,22 +20,14 @@ interface ToDoRepository {
     //end region
 
     //region Queries
-    fun searchByContent(searchString: String, sortOrder: SortOrder, cursor: Cursor): List<ToDo>
-
     fun getById(id: String): ToDo?
 
-    fun getAllCurrent(cursor: Cursor, time: LocalDateTime): List<ToDo>
+    fun getAllCurrent(time: LocalDateTime): List<ToDo>
 
-    fun getAllOverdue(cursor: Cursor, time: LocalDateTime): List<ToDo>
+    fun getAllOverdue(time: LocalDateTime): List<ToDo>
 
-    fun getAllCompleted(cursor: Cursor): List<ToDo>
+    fun getAllCompleted(): List<ToDo>
     //endregion
-}
-
-data class Cursor(val offset: Int = 0, val limit: Int = 1)
-
-enum class SortOrder {
-    ASCENDING_DUE_DATE, DESCENDING_DUE_DATE
 }
 
 data class EditToDoRequest(

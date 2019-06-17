@@ -111,6 +111,20 @@ class ToDoDaoTest {
     }
 
     @Test
+    fun `Find current toDos when no due date specified`() {
+        val time = LocalDateTime.now()
+        val entity = ToDoEntity("::id::", "::content::", null, time, false)
+
+        toDoDao.add(entity)
+        toDoDao.add(entity.copy(dueDate = time.minusDays(3), id = "::id-1::"))
+        toDoDao.add(entity.copy(completed = true, id = "::id-2::"))
+
+        val retrievedEntities = toDoDao.getAllCurrent(time.minusDays(1))
+
+        assertThat(retrievedEntities, Is(listOf(entity)))
+    }
+
+    @Test
     fun `Find completed toDos`() {
         val time = LocalDateTime.now()
         val entity = ToDoEntity("::id::", "::content::", time, time, true)

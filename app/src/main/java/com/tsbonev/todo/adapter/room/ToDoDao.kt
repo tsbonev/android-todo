@@ -21,7 +21,7 @@ interface ToDoDao {
     @Query("SELECT * FROM todos WHERE id LIKE :id")
     fun getById(id: String): ToDoEntity?
 
-    @Query("SELECT * FROM todos WHERE dueDate > :time AND completed = 0")
+    @Query("SELECT * FROM todos WHERE (dueDate > :time OR dueDate IS NULL) AND completed = 0")
     fun getAllCurrent(time: LocalDateTime): List<ToDoEntity>
 
     @Query("SELECT * FROM todos WHERE dueDate <= :time AND completed = 0")
@@ -43,7 +43,7 @@ object LocalDateTimeConverters {
     @TypeConverter
     @JvmStatic
     fun toLocalDateTime(value: String?): LocalDateTime? {
-        return value.let {
+        return value?.let {
             formatter.parse(value, LocalDateTime::from)
         }
     }

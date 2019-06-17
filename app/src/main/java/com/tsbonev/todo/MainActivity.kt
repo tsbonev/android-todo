@@ -3,35 +3,37 @@ package com.tsbonev.todo
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager.widget.ViewPager
 import com.tsbonev.todo.adapter.room.ToDoService
 import com.tsbonev.todo.core.AddToDoRequest
-import com.tsbonev.todo.core.adapter.ToDoRecyclerAdapter
+import com.tsbonev.todo.core.ui.ToDoRecyclerAdapter
 import com.tsbonev.todo.core.model.ToDoViewModel
+import com.tsbonev.todo.core.ui.ToDoViewPageAdapter
 import com.tsbonev.todo.databinding.ActivityMainBinding
+import org.koin.android.ext.android.bind
 import org.koin.android.ext.android.inject
+import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
 
-    private lateinit var mainBinding: ActivityMainBinding
-    private lateinit var adapter: ToDoRecyclerAdapter
-
-    private val toDoService: ToDoService by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val currentToDos = toDoService.getAllCurrent(LocalDateTime.now())
-
         super.onCreate(savedInstanceState)
-        mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        mainBinding.mainRecyclerView.layoutManager = LinearLayoutManager(this)
-        mainBinding.mainRecyclerView.setHasFixedSize(true)
-        adapter = ToDoRecyclerAdapter(this, currentToDos.map {
-            ToDoViewModel(it)
-        }
-        )
+        val service: ToDoService by inject()
 
-        mainBinding.mainRecyclerView.adapter = adapter
+        service.add(AddToDoRequest("::current::", LocalDateTime.now(), null))
+        val todo = service.add(AddToDoRequest("::completed::", LocalDateTime.now(), null))
+        service.add(AddToDoRequest("::overdue::", LocalDateTime.now(), LocalDateTime.now().minusDays(1)))
+
+
+        service.complete(todo.id)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding.viewPager.adapter = ToDoViewPageAdapter(supportFragmentManager)
     }
 }

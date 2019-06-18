@@ -14,8 +14,8 @@ class ToDoViewPageAdapter(fragmentManager: FragmentManager) : FragmentStatePager
 
     override fun getItem(position: Int): Fragment {
         return when (position) {
-            0 -> ToDoFragment.newInstance(ToDoType.CURRENT)
-            1 -> ToDoFragment.newInstance(ToDoType.COMPLETED)
+            0 -> ToDoFragment.newInstance(ToDoType.COMPLETED)
+            1 -> ToDoFragment.newInstance(ToDoType.CURRENT)
             2 -> ToDoFragment.newInstance(ToDoType.OVERDUE)
             else -> error("No such page")
         }

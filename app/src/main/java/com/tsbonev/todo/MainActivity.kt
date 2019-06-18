@@ -27,6 +27,9 @@ class MainActivity : AppCompatActivity() {
         val service: ToDoService by inject()
 
         service.add(AddToDoRequest("::current::", LocalDateTime.now(), null))
+        service.add(AddToDoRequest("::currentDue1::", LocalDateTime.now(), LocalDateTime.now().plusMinutes(12)))
+        service.add(AddToDoRequest("::currentDue2::", LocalDateTime.now(), LocalDateTime.now().plusDays(2)))
+        service.add(AddToDoRequest("::currentDue3::", LocalDateTime.now(), LocalDateTime.now().plusMonths(2).plusDays(1)))
         val todo = service.add(AddToDoRequest("::completed::", LocalDateTime.now(), null))
         service.add(AddToDoRequest("::overdue::", LocalDateTime.now(), LocalDateTime.now().minusDays(1)))
 
@@ -35,5 +38,6 @@ class MainActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.viewPager.adapter = ToDoViewPageAdapter(supportFragmentManager)
+        binding.viewPager.currentItem = 1
     }
 }

@@ -4,13 +4,14 @@
 
 
     <data>
-        <variable name="toDo" type="com.tsbonev.todo.core.model.ToDoViewModel"/>
+        <variable name="toDo" type="com.tsbonev.todo.core.ToDo"/>
     </data>
 
     <LinearLayout android:orientation="horizontal" android:layout_width="match_parent"
                   android:layout_height="wrap_content" android:id="@+id/todo_wrapper" android:padding="8dp">
 
         <CheckBox android:id="@+id/completed_btn" android:layout_width="wrap_content"
+                  android:checked="@{toDo.completed}"
                   android:layout_height="match_parent"/>
 
         <TextView android:id="@+id/todo_content" android:layout_width="match_parent"

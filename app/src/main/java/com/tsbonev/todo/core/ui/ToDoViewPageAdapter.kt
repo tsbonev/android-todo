@@ -13,6 +13,7 @@ class ToDoViewPageAdapter(fragmentManager: FragmentManager) : FragmentStatePager
     private val PAGE_NUM = 3
 
     override fun getItem(position: Int): Fragment {
+        println("$$$$$--------- $position")
         return when (position) {
             0 -> ToDoFragment.newInstance(ToDoType.COMPLETED)
             1 -> ToDoFragment.newInstance(ToDoType.CURRENT)

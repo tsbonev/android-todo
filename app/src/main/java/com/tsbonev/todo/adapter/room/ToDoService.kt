@@ -1,10 +1,12 @@
 package com.tsbonev.todo.adapter.room
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.tsbonev.todo.core.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import org.threeten.bp.LocalDateTime
 
 /**
@@ -14,7 +16,7 @@ class ToDoService(
     private val toDoDao: ToDoDao,
     private val idGenerator: IdGenerator
 ) : ToDos {
-    override fun add(request: AddToDoRequest): ToDo = runBlocking {
+    override suspend fun add(request: AddToDoRequest): ToDo {
         val todo = CoroutineScope(IO).async {
             val entity = ToDoEntity(
                 idGenerator.generateId(), request.content,
@@ -23,13 +25,13 @@ class ToDoService(
 
             toDoDao.add(entity)
 
-            entity.toDomain()
+            ToDo(entity)
         }
 
-        todo.await()
+        return todo.await()
     }
 
-    override fun edit(request: EditToDoRequest): ToDo = runBlocking {
+    override suspend fun edit(request: EditToDoRequest): ToDo {
         val updatedEntity = CoroutineScope(IO).async {
             val entity = toDoDao.getById(request.id) ?: throw ToDoNotFoundException(request.id)
 
@@ -37,13 +39,13 @@ class ToDoService(
 
             toDoDao.update(updatedEntity)
 
-            updatedEntity.toDomain()
+            ToDo(updatedEntity)
         }
 
-        updatedEntity.await()
+        return updatedEntity.await()
     }
 
-    override fun complete(id: String): ToDo = runBlocking {
+    override suspend fun complete(id: String): ToDo {
         val completedEntity = CoroutineScope(IO).async {
 
             val entity = toDoDao.getById(id) ?: throw ToDoNotFoundException(id)
@@ -52,13 +54,13 @@ class ToDoService(
 
             toDoDao.update(completedEntity)
 
-            completedEntity.toDomain()
+            ToDo(completedEntity)
         }
 
-        completedEntity.await()
+        return completedEntity.await()
     }
 
-    override fun revert(id: String): ToDo = runBlocking {
+    override suspend fun revert(id: String): ToDo {
         val revertedEntity = CoroutineScope(IO).async {
 
             val entity = toDoDao.getById(id) ?: throw ToDoNotFoundException(id)
@@ -67,52 +69,65 @@ class ToDoService(
 
             toDoDao.update(revertedEntity)
 
-            revertedEntity.toDomain()
+            ToDo(revertedEntity)
         }
 
-        revertedEntity.await()
+        return revertedEntity.await()
     }
 
-    override fun remove(id: String): ToDo = runBlocking {
+    override suspend fun remove(id: String): ToDo {
         val removedEntity = CoroutineScope(IO).async {
             val entity = toDoDao.getById(id) ?: throw ToDoNotFoundException(id)
 
             val removedEntity = entity.copy(completed = false)
 
             toDoDao.delete(removedEntity)
-            removedEntity.toDomain()
+            ToDo(removedEntity)
         }
 
-        removedEntity.await()
+        return removedEntity.await()
     }
 
-    override fun getById(id: String): ToDo? = runBlocking {
+    override suspend fun getById(id: String): ToDo? {
         val entity = CoroutineScope(IO).async {
-            toDoDao.getById(id)?.toDomain()
+            toDoDao.getById(id)?.let { ToDo(it) }
         }
 
-        entity.await()
+        return entity.await()
     }
 
-    override fun getAllCurrent(time: LocalDateTime): List<ToDo> = runBlocking {
+    override suspend fun getAllCurrent(time: LocalDateTime): LiveData<List<ToDo>> {
         val entities = CoroutineScope(IO).async {
-            toDoDao.getAllCurrent(time).map { it.toDomain() }
+            Transformations.switchMap(toDoDao.getAllCurrent(time)) {
+                switchToDoLiveData(it)
+            }
         }
-        entities.await()
+        return entities.await()
     }
 
-    override fun getAllOverdue(time: LocalDateTime): List<ToDo> = runBlocking {
+    override suspend fun getAllOverdue(time: LocalDateTime): LiveData<List<ToDo>> {
         val entities = CoroutineScope(IO).async {
-            toDoDao.getAllOverdue(time).map { it.toDomain() }
+            Transformations.switchMap(toDoDao.getAllOverdue(time)) {
+                switchToDoLiveData(it)
+            }
         }
-        entities.await()
+        return entities.await()
     }
 
-    override fun getAllCompleted(): List<ToDo> = runBlocking {
+    override suspend fun getAllCompleted(): LiveData<List<ToDo>> {
         val entities = CoroutineScope(IO).async {
-            toDoDao.getAllCompleted().map { it.toDomain() }
+            Transformations.switchMap(toDoDao.getAllCompleted()) {
+                switchToDoLiveData(it)
+            }
         }
-        entities.await()
+        return entities.await()
     }
 
+    private fun switchToDoLiveData(input: List<ToDoEntity>): LiveData<List<ToDo>> {
+        val result = MutableLiveData<List<ToDo>>()
+        val toDos = input.map { entity -> ToDo(entity) }
+        result.postValue(toDos)
+
+        return result
+    }
 }

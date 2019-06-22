@@ -1,7 +1,11 @@
 package com.tsbonev.todo.adapter.room
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import com.tsbonev.todo.core.*
 import com.tsbonev.todo.helper.expecting
+import com.tsbonev.todo.helper.observeOnce
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.CoreMatchers.nullValue
 import org.jmock.AbstractExpectations.returnValue
@@ -12,6 +16,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.threeten.bp.LocalDateTime
 import org.hamcrest.CoreMatchers.`is` as Is
+import org.junit.rules.TestRule
+
+
 
 /**
  * @author Tsvetozar Bonev (tsbonev@gmail.com)
@@ -20,6 +27,10 @@ class ToDoServiceTest {
     @Rule
     @JvmField
     val context: JUnitRuleMockery = JUnitRuleMockery()
+
+    @Rule
+    @JvmField
+    var rule: TestRule = InstantTaskExecutorRule()
 
     init {
         context.setThreadingPolicy(Synchroniser())
@@ -56,14 +67,16 @@ class ToDoServiceTest {
             will(returnValue(basicEntity.copy(completed = true)))
         }
 
-        val createdToDo = service.add(AddToDoRequest("::content::", date, date))
+        runBlocking {
+            val createdToDo = service.add(AddToDoRequest("::content::", date, date))
 
-        service.complete("::id::")
+            service.complete("::id::")
 
-        val foundToDo = service.getById("::id::")
+            val foundToDo = service.getById("::id::")!!
 
-        assertThat(foundToDo, Is(notNullValue()))
-        assertThat(foundToDo, Is(createdToDo.copy(status = ToDoStatus.COMPLETED)))
+            assertThat(foundToDo, Is(notNullValue()))
+            assertThat(foundToDo, Is(createdToDo.copy(completed = true)))
+        }
     }
 
     @Test
@@ -74,9 +87,11 @@ class ToDoServiceTest {
             will(returnValue(null))
         }
 
-        val toDo = service.getById("::id::")
+        runBlocking {
+            val toDo = service.getById("::id::")
 
-        assertThat(toDo, Is(nullValue()))
+            assertThat(toDo, Is(nullValue()))
+        }
     }
 
 
@@ -94,11 +109,14 @@ class ToDoServiceTest {
             oneOf(toDoDao).update(basicEntity.copy(content = "::newContent::", dueDate = null))
         }
 
-        val addedToDo = service.add(AddToDoRequest("::content::", date, date))
 
-        val updatedToDo = service.edit(EditToDoRequest("::id::", "::newContent::", null))
+        runBlocking {
+            val addedToDo = service.add(AddToDoRequest("::content::", date, date))
 
-        assertThat(updatedToDo, Is(addedToDo.copy(content = "::newContent::", dueDate = null)))
+            val updatedToDo = service.edit(EditToDoRequest("::id::", "::newContent::", null))
+
+            assertThat(updatedToDo, Is(addedToDo.copy(content = "::newContent::", dueDate = "")))
+        }
     }
 
     @Test(expected = ToDoNotFoundException::class)
@@ -108,7 +126,9 @@ class ToDoServiceTest {
             will(returnValue(null))
         }
 
-        service.edit(EditToDoRequest("::id::", "::newContent::", null))
+        runBlocking {
+            service.edit(EditToDoRequest("::id::", "::newContent::", null))
+        }
     }
 
     @Test
@@ -125,10 +145,12 @@ class ToDoServiceTest {
             oneOf(toDoDao).delete(basicEntity)
         }
 
-        val addedToDo = service.add(AddToDoRequest("::content::", date, date))
+        runBlocking {
+            val addedToDo = service.add(AddToDoRequest("::content::", date, date))
 
-        val removedToDo = service.remove("::id::")
-        assertThat(addedToDo, Is(removedToDo))
+            val removedToDo = service.remove("::id::")
+            assertThat(addedToDo, Is(removedToDo))
+        }
     }
 
     @Test(expected = ToDoNotFoundException::class)
@@ -138,7 +160,9 @@ class ToDoServiceTest {
             will(returnValue(null))
         }
 
-        service.remove("::id::")
+        runBlocking {
+            service.remove("::id::")
+        }
     }
 
     @Test(expected = ToDoNotFoundException::class)
@@ -148,7 +172,9 @@ class ToDoServiceTest {
             will(returnValue(null))
         }
 
-        service.complete("::id::")
+        runBlocking {
+            service.complete("::id::")
+        }
     }
 
     @Test
@@ -170,12 +196,13 @@ class ToDoServiceTest {
             oneOf(toDoDao).update(basicEntity)
         }
 
-        service.add(AddToDoRequest("::content::", date, date))
-        service.complete("::id::")
+        runBlocking {
+            service.add(AddToDoRequest("::content::", date, date))
+            service.complete("::id::")
 
-        val revertedToDo = service.revert("::id::")
-
-        assertThat(revertedToDo.status, Is(ToDoStatus.CURRENT))
+            val revertedToDo = service.revert("::id::")
+            assertThat(revertedToDo.completed, Is(false))
+        }
     }
 
     @Test(expected = ToDoNotFoundException::class)
@@ -185,78 +212,116 @@ class ToDoServiceTest {
             will(returnValue(null))
         }
 
-        service.revert("::id::")
+
+        runBlocking {
+            service.revert("::id::")
+        }
     }
 
     @Test
     fun `Get all current todos`() {
+        val data = MutableLiveData<List<ToDoEntity>>()
+
+        data.value = listOf(basicEntity, basicEntity)
+
         context.expecting {
             oneOf(toDoDao).getAllCurrent(date)
-            will(returnValue(listOf(basicEntity, basicEntity)))
+            will(returnValue(data))
         }
 
-        val todos = service.getAllCurrent(date)
-
-        assertThat(todos, Is(listOf(basicEntity.toDomain(), basicEntity.toDomain())))
+        runBlocking {
+            service.getAllCurrent(date).observeOnce {
+                assertThat(it, Is(listOf(ToDo(basicEntity), ToDo(basicEntity))))
+            }
+        }
     }
 
     @Test
     fun `Get all current todos when empty`() {
+        val data = MutableLiveData<List<ToDoEntity>>()
+        data.value = listOf()
+
         context.expecting {
             oneOf(toDoDao).getAllCurrent(date)
-            will(returnValue(listOf<ToDoEntity>()))
+            will(returnValue(data))
         }
 
-        val todos = service.getAllCurrent(date)
-
-        assertThat(todos, Is(listOf()))
+        runBlocking {
+            service.getAllCurrent(date).observeOnce {
+                assertThat(it, Is(listOf()))
+            }
+        }
     }
 
     @Test
     fun `Get all overdue todos`() {
+        val data = MutableLiveData<List<ToDoEntity>>()
+
+        data.value = listOf(basicEntity, basicEntity)
+
         context.expecting {
             oneOf(toDoDao).getAllOverdue(date)
-            will(returnValue(listOf(basicEntity, basicEntity)))
+            will(returnValue(data))
         }
 
-        val todos = service.getAllOverdue(date)
-
-        assertThat(todos, Is(listOf(basicEntity.toDomain(), basicEntity.toDomain())))
+        runBlocking {
+            service.getAllOverdue(date).observeOnce {
+                assertThat(it, Is(listOf(ToDo(basicEntity), ToDo(basicEntity))))
+            }
+        }
     }
 
     @Test
     fun `Get all overdue todos when empty`() {
+        val data = MutableLiveData<List<ToDoEntity>>()
+        data.value = listOf()
+
+
         context.expecting {
             oneOf(toDoDao).getAllOverdue(date)
-            will(returnValue(listOf<ToDoEntity>()))
+            will(returnValue(data))
         }
 
-        val todos = service.getAllOverdue(date)
-
-        assertThat(todos, Is(listOf()))
+        runBlocking {
+            service.getAllOverdue(date).observeOnce {
+                assertThat(it, Is(listOf()))
+            }
+        }
     }
 
     @Test
     fun `Get all completed todos`() {
+        val data = MutableLiveData<List<ToDoEntity>>()
+
+        data.value = listOf(basicEntity, basicEntity)
+
         context.expecting {
             oneOf(toDoDao).getAllCompleted()
-            will(returnValue(listOf(basicEntity, basicEntity)))
+            will(returnValue(data))
         }
 
-        val todos = service.getAllCompleted()
-
-        assertThat(todos, Is(listOf(basicEntity.toDomain(), basicEntity.toDomain())))
+        runBlocking {
+            service.getAllCompleted().observeOnce {
+                assertThat(it, Is(listOf(ToDo(basicEntity), ToDo(basicEntity))))
+            }
+        }
     }
 
     @Test
     fun `Get all completed todos when empty`() {
+        val data = MutableLiveData<List<ToDoEntity>>()
+        data.value = listOf()
+
+
         context.expecting {
             oneOf(toDoDao).getAllCompleted()
-            will(returnValue(listOf<ToDoEntity>()))
+            will(returnValue(data))
         }
 
-        val todos = service.getAllCompleted()
-
-        assertThat(todos, Is(listOf()))
+        runBlocking {
+            service.getAllCompleted().observeOnce {
+                assertThat(it, Is(listOf()))
+            }
+        }
     }
 }

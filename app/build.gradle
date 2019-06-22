@@ -53,10 +53,13 @@ dependencies {
 
     testImplementation "androidx.room:room-testing:$room_version"
     testImplementation "org.koin:koin-test:$koin_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "org.koin:koin-androidx-viewmodel:$koin_version"
 
     implementation "android.arch.navigation:navigation-fragment-ktx:$version_navigation"
     implementation "android.arch.navigation:navigation-ui-ktx:$version_navigation"
 
+    testImplementation 'android.arch.core:core-testing:1.1.1'
 
     testImplementation 'androidx.test:runner:1.2.0'
     testImplementation 'androidx.test:rules:1.2.0'

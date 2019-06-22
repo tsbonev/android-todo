@@ -6,14 +6,18 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.tsbonev.todo.R
-import com.tsbonev.todo.core.model.ToDoViewModel
+import com.tsbonev.todo.core.ToDo
 import com.tsbonev.todo.databinding.TodoItemLayoutBinding
 
 /**
  * @author Tsvetozar Bonev (tsbonev@gmail.com)
  */
-class ToDoRecyclerAdapter(private val toDoList: List<ToDoViewModel>) :
+class ToDoRecyclerAdapter(private var toDoList: List<ToDo>) :
     RecyclerView.Adapter<ToDoRecyclerAdapter.ToDoViewHolder>() {
+
+    fun setToDos(list: List<ToDo>) {
+        this.toDoList = list
+    }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, position: Int): ToDoViewHolder {
         val todoLayoutBinding = DataBindingUtil.inflate<TodoItemLayoutBinding>(

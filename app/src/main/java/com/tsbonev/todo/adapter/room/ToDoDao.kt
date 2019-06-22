@@ -1,5 +1,6 @@
 package com.tsbonev.todo.adapter.room
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
@@ -21,14 +22,14 @@ interface ToDoDao {
     @Query("SELECT * FROM todos WHERE id LIKE :id")
     fun getById(id: String): ToDoEntity?
 
-    @Query("SELECT * FROM todos WHERE (dueDate > :time OR dueDate IS NULL) AND completed = 0")
-    fun getAllCurrent(time: LocalDateTime): List<ToDoEntity>
+    @Query("SELECT * FROM todos WHERE (dueDate > :time OR dueDate IS NULL) AND completed = 0 ORDER BY createdOn DESC")
+    fun getAllCurrent(time: LocalDateTime): LiveData<List<ToDoEntity>>
 
-    @Query("SELECT * FROM todos WHERE dueDate <= :time AND completed = 0")
-    fun getAllOverdue(time: LocalDateTime): List<ToDoEntity>
+    @Query("SELECT * FROM todos WHERE dueDate <= :time AND completed = 0 ORDER BY createdOn DESC")
+    fun getAllOverdue(time: LocalDateTime): LiveData<List<ToDoEntity>>
 
-    @Query("SELECT * FROM todos WHERE completed = 1")
-    fun getAllCompleted(): List<ToDoEntity>
+    @Query("SELECT * FROM todos WHERE completed = 1 ORDER BY createdOn DESC")
+    fun getAllCompleted(): LiveData<List<ToDoEntity>>
 }
 
 @Database(entities = arrayOf(ToDoEntity::class), version = 1)

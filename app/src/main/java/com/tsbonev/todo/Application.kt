@@ -5,6 +5,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import com.tsbonev.todo.adapter.koin.roomInMemoryModule
 import com.tsbonev.todo.adapter.koin.roomPersistentModule
 import com.tsbonev.todo.adapter.koin.toDoModule
+import com.tsbonev.todo.adapter.koin.toDoViewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -22,7 +23,8 @@ class Application : Application() {
             androidContext(this@Application)
             modules(listOf(
                 roomInMemoryModule,
-                toDoModule
+                toDoModule,
+                toDoViewModelModule
             ))
         }
     }

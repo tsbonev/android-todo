@@ -1,5 +1,6 @@
 package com.tsbonev.todo.adapter.room
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.CoreMatchers.`is` as Is
@@ -12,6 +13,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.runner.RunWith
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.hamcrest.CoreMatchers.nullValue
+import org.junit.Rule
+import org.junit.rules.TestRule
 
 
 /**
@@ -19,6 +22,11 @@ import org.hamcrest.CoreMatchers.nullValue
  */
 @RunWith(AndroidJUnit4::class)
 class ToDoDaoTest {
+
+    @Rule
+    @JvmField
+    var rule: TestRule = InstantTaskExecutorRule()
+
     private lateinit var toDoDao: ToDoDao
     private lateinit var db: AppDatabase
 
@@ -91,7 +99,10 @@ class ToDoDaoTest {
         toDoDao.add(entity.copy(dueDate = time.plusDays(3), id = "::id-2::"))
         toDoDao.add(entity.copy(completed = true, id = "::id-3::"))
 
-        val retrievedEntities = toDoDao.getAllOverdue(time.plusDays(1))
+        var retrievedEntities: List<ToDoEntity> = listOf()
+        toDoDao.getAllOverdue(time.plusDays(1)).observeForever {
+            retrievedEntities = it
+        }
 
         assertThat(retrievedEntities, Is(listOf(entity)))
     }
@@ -105,7 +116,10 @@ class ToDoDaoTest {
         toDoDao.add(entity.copy(dueDate = time.minusDays(3), id = "::id-1::"))
         toDoDao.add(entity.copy(completed = true, id = "::id-2::"))
 
-        val retrievedEntities = toDoDao.getAllCurrent(time.minusDays(1))
+        var retrievedEntities: List<ToDoEntity> = listOf()
+        toDoDao.getAllCurrent(time.minusDays(1)).observeForever {
+                retrievedEntities = it
+        }
 
         assertThat(retrievedEntities, Is(listOf(entity)))
     }
@@ -119,7 +133,10 @@ class ToDoDaoTest {
         toDoDao.add(entity.copy(dueDate = time.minusDays(3), id = "::id-1::"))
         toDoDao.add(entity.copy(completed = true, id = "::id-2::"))
 
-        val retrievedEntities = toDoDao.getAllCurrent(time.minusDays(1))
+        var retrievedEntities: List<ToDoEntity> = listOf()
+        toDoDao.getAllCurrent(time.minusDays(1)).observeForever {
+            retrievedEntities = it
+        }
 
         assertThat(retrievedEntities, Is(listOf(entity)))
     }
@@ -132,7 +149,10 @@ class ToDoDaoTest {
         toDoDao.add(entity)
         toDoDao.add(entity.copy(completed = false, id = "::id-1::"))
 
-        val retrievedEntities = toDoDao.getAllCompleted()
+        var retrievedEntities: List<ToDoEntity> = listOf()
+        toDoDao.getAllCompleted().observeForever {
+            retrievedEntities = it
+        }
 
         assertThat(retrievedEntities, Is(listOf(entity)))
     }

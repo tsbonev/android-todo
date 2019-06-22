@@ -1,5 +1,6 @@
 package com.tsbonev.todo.core
 
+import androidx.lifecycle.LiveData
 import org.threeten.bp.LocalDateTime
 
 /**
@@ -8,25 +9,25 @@ import org.threeten.bp.LocalDateTime
 interface ToDos {
 
     //region Commands
-    fun add(request: AddToDoRequest): ToDo
+    suspend fun add(request: AddToDoRequest): ToDo
 
-    fun edit(request: EditToDoRequest): ToDo
+    suspend fun edit(request: EditToDoRequest): ToDo
 
-    fun complete(id: String): ToDo
+    suspend fun complete(id: String): ToDo
 
-    fun revert(id: String): ToDo
+    suspend fun revert(id: String): ToDo
 
-    fun remove(id: String): ToDo
+    suspend fun remove(id: String): ToDo
     //end region
 
     //region Queries
-    fun getById(id: String): ToDo?
+    suspend fun getById(id: String): ToDo?
 
-    fun getAllCurrent(time: LocalDateTime): List<ToDo>
+    suspend fun getAllCurrent(time: LocalDateTime): LiveData<List<ToDo>>
 
-    fun getAllOverdue(time: LocalDateTime): List<ToDo>
+    suspend fun getAllOverdue(time: LocalDateTime): LiveData<List<ToDo>>
 
-    fun getAllCompleted(): List<ToDo>
+    suspend fun getAllCompleted(): LiveData<List<ToDo>>
     //endregion
 }
 

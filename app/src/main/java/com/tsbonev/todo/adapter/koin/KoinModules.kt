@@ -5,7 +5,9 @@ import com.tsbonev.todo.adapter.room.AppDatabase
 import com.tsbonev.todo.adapter.room.ToDoService
 import com.tsbonev.todo.core.IdGenerator
 import com.tsbonev.todo.core.UUIDGenerator
+import com.tsbonev.todo.core.model.ToDoViewModel
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 /**
@@ -28,4 +30,8 @@ val toDoModule = module {
     single { DbHolder(db = get()).db.toDoDao() }
 
     single { ToDoService(toDoDao = get(), idGenerator = get()) }
+}
+
+val toDoViewModelModule = module {
+    viewModel { ToDoViewModel(toDoService = get()) }
 }

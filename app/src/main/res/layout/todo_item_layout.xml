@@ -7,22 +7,30 @@
         <variable name="toDo" type="com.tsbonev.todo.core.ToDo"/>
     </data>
 
+    <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                                       android:layout_height="wrap_content"
+                                       android:layout_marginBottom="5dp">
+
+
     <LinearLayout android:orientation="horizontal" android:layout_width="match_parent"
-                  android:layout_height="wrap_content" android:id="@+id/todo_wrapper" android:padding="8dp">
+                  android:layout_height="wrap_content"
+                  android:id="@+id/todo_wrapper" android:padding="8dp">
 
-        <CheckBox android:id="@+id/completed_btn" android:layout_width="wrap_content"
-                  android:checked="@{toDo.completed}"
-                  android:layout_height="match_parent"/>
+            <CheckBox android:id="@+id/completed_btn" android:layout_width="wrap_content"
+                      android:checked="@{toDo.completed}"
+                      android:layout_height="match_parent"/>
 
-        <TextView android:id="@+id/todo_content" android:layout_width="match_parent"
-                  android:layout_height="35dp" tools:text="@string/todo_content" android:layout_weight="1"
-                  android:text="@{toDo.content}" android:gravity="center"/>
+            <TextView android:id="@+id/todo_content" android:layout_width="match_parent"
+                      android:layout_height="35dp" tools:text="@string/todo_content" android:layout_weight="1"
+                      android:text="@{toDo.content}" android:gravity="center"/>
 
-        <TextView android:id="@+id/todo_due_date" android:layout_width="match_parent"
-                  android:layout_height="match_parent" tools:text="@string/todo_due_date" android:layout_weight="4"
-        android:text="@{toDo.dueDate}" android:gravity="center"/>
+            <TextView android:id="@+id/todo_due_date" android:layout_width="match_parent"
+                      android:layout_height="match_parent" tools:text="@string/todo_due_date" android:layout_weight="4"
+                      android:text="@{toDo.dueDate}" android:gravity="center"/>
 
     </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
 
 
 </layout>

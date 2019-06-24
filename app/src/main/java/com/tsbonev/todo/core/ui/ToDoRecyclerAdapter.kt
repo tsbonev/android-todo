@@ -19,9 +19,17 @@ import com.tsbonev.todo.databinding.TodoItemLayoutBinding
 class ToDoRecyclerAdapter(private val viewModel: ToDoViewModel, private var toDos: List<ToDo>) :
     RecyclerView.Adapter<ToDoRecyclerAdapter.ToDoViewHolder>() {
 
+    init {
+        this.setHasStableIds(true)
+    }
+
     fun setToDos(list: List<ToDo>) {
         toDos = list
         notifyDataSetChanged()
+    }
+
+    override fun getItemId(position: Int): Long {
+        return "${position}_${toDos[position].completed}_${toDos[position].id}_${toDos[position].dueDate}}".hashCode().toLong()
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, position: Int): ToDoViewHolder {

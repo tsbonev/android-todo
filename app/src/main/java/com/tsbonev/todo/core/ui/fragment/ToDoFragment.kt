@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.tsbonev.todo.R
 import com.tsbonev.todo.core.ToDo
 import com.tsbonev.todo.core.model.ToDoViewModel
@@ -35,12 +35,17 @@ class ToDoFragment(private val type: ToDoType) : Fragment() {
         adapter = ToDoRecyclerAdapter(toDoViewModel, listOf())
 
         toDoViewModel.toDosOfType(type).observe(this,
-            Observer<List<ToDo>> { t -> adapter.setToDos(t) }
+            Observer<List<ToDo>> { adapter.setToDos(it) }
         )
 
         binding.mainRecyclerView.layoutManager = LinearLayoutManager(activity!!)
         binding.mainRecyclerView.setHasFixedSize(true)
         binding.mainRecyclerView.adapter = adapter
+
+        binding.mainRecyclerViewRefresh.setOnRefreshListener {
+            toDoViewModel.reload(type, LocalDateTime.now())
+            binding.mainRecyclerViewRefresh.isRefreshing = false
+        }
 
         return binding.root
     }

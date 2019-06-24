@@ -30,18 +30,23 @@ data class ToDoViewModel(private val toDoService: ToDoService) : ViewModel() {
     }
 
     init {
-        load()
-    }
-
-    fun load() {
+        val time = LocalDateTime.now()
         viewModelScope.launch {
-            val time = LocalDateTime.now()
+            clearObservers()
 
             toDoService.getAllCurrent(time).observeForever(currentToDosObserver)
 
             toDoService.getAllOverdue(time).observeForever(overdueToDosObserver)
 
             toDoService.getAllCompleted().observeForever(completedToDosObserver)
+        }
+    }
+
+    fun reload(type: ToDoType, time: LocalDateTime) {
+        when(type) {
+            ToDoType.COMPLETED -> reloadCompleted()
+            ToDoType.OVERDUE -> reloadOverdue(time)
+            ToDoType.CURRENT -> reloadCurrent(time)
         }
     }
 
@@ -85,8 +90,37 @@ data class ToDoViewModel(private val toDoService: ToDoService) : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+        clearObservers()
+    }
+
+    private fun clearObservers() {
         currentToDos.removeObserver(currentToDosObserver)
         completedToDos.removeObserver(completedToDosObserver)
         overdueToDos.removeObserver(overdueToDosObserver)
+    }
+
+    private fun reloadCurrent(time: LocalDateTime) {
+        viewModelScope.launch {
+            currentToDos.removeObserver(currentToDosObserver)
+
+            toDoService.getAllCurrent(time).observeForever(currentToDosObserver)
+        }
+    }
+
+
+    private fun reloadOverdue(time: LocalDateTime) {
+        viewModelScope.launch {
+            overdueToDos.removeObserver(overdueToDosObserver)
+
+            toDoService.getAllOverdue(time).observeForever(overdueToDosObserver)
+        }
+    }
+
+    private fun reloadCompleted() {
+        viewModelScope.launch {
+            completedToDos.removeObserver(completedToDosObserver)
+
+            toDoService.getAllCompleted().observeForever(completedToDosObserver)
+        }
     }
 }

@@ -10,10 +10,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tsbonev.todo.R
+import com.tsbonev.todo.core.ToDo
 import com.tsbonev.todo.core.model.ToDoViewModel
 import com.tsbonev.todo.core.ui.ToDoRecyclerAdapter
 import com.tsbonev.todo.databinding.TodoFragmentBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.threeten.bp.LocalDateTime
 
 /**
  * @author Tsvetozar Bonev (tsbonev@gmail.com)
@@ -28,31 +30,17 @@ class ToDoFragment(private val type: ToDoType) : Fragment() {
     private lateinit var binding: TodoFragmentBinding
     private val toDoViewModel: ToDoViewModel by viewModel()
 
-    private fun refresh() {
-        toDoViewModel.load()
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.todo_fragment, container, false)
+        adapter = ToDoRecyclerAdapter(toDoViewModel, listOf())
 
-        val toDos = when(type) {
-            ToDoType.CURRENT -> toDoViewModel.current()
-            ToDoType.COMPLETED -> toDoViewModel.completed()
-            ToDoType.OVERDUE -> toDoViewModel.overdue()
-        }
-
-        adapter = ToDoRecyclerAdapter(listOf())
-
-        toDos.observe(this, Observer {
-            adapter.setToDos(it)
-            adapter.notifyDataSetChanged()
-        })
+        toDoViewModel.toDosOfType(type).observe(this,
+            Observer<List<ToDo>> { t -> adapter.setToDos(t) }
+        )
 
         binding.mainRecyclerView.layoutManager = LinearLayoutManager(activity!!)
         binding.mainRecyclerView.setHasFixedSize(true)
         binding.mainRecyclerView.adapter = adapter
-
-        Toast.makeText(this.context, type.name, Toast.LENGTH_SHORT).show()
 
         return binding.root
     }

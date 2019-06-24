@@ -1,4 +1,4 @@
-package com.tsbonev.todo.helper
+package com.tsbonev.todo.helpers
 
 import androidx.lifecycle.*
 import org.jmock.Expectations

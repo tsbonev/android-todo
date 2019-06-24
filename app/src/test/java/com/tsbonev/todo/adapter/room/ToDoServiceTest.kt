@@ -3,8 +3,8 @@ package com.tsbonev.todo.adapter.room
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.tsbonev.todo.core.*
-import com.tsbonev.todo.helper.expecting
-import com.tsbonev.todo.helper.observeOnce
+import com.tsbonev.todo.helpers.expecting
+import com.tsbonev.todo.helpers.observeOnce
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.CoreMatchers.nullValue

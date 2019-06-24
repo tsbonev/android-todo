@@ -69,6 +69,8 @@ data class ToDoViewModel(private val toDoService: ToDoService) : ViewModel() {
     }
 
     fun add(content: String, dueDate: LocalDateTime?) {
+        println("$$$$$$$$$$$$$$$-------- ${LocalDateTime.now()}")
+        println("$$$$$$$$$$$$$$$-------- ${dueDate}")
         viewModelScope.launch {
             toDoService.add(AddToDoRequest(content, LocalDateTime.now(), dueDate))
         }

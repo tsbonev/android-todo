@@ -8,7 +8,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.tsbonev.todo.R
 import com.tsbonev.todo.core.ToDo
 import com.tsbonev.todo.core.model.ToDoViewModel
@@ -25,6 +24,7 @@ class ToDoFragment(private val type: ToDoType) : Fragment() {
     companion object {
         fun newInstance(type: ToDoType) = ToDoFragment(type)
     }
+
 
     private lateinit var adapter: ToDoRecyclerAdapter
     private lateinit var binding: TodoFragmentBinding
@@ -45,6 +45,10 @@ class ToDoFragment(private val type: ToDoType) : Fragment() {
         binding.mainRecyclerViewRefresh.setOnRefreshListener {
             toDoViewModel.reload(type, LocalDateTime.now())
             binding.mainRecyclerViewRefresh.isRefreshing = false
+        }
+
+        binding.addButton.setOnClickListener {
+            AddToDoFragment.newInstance().show(this.fragmentManager, "addToDo_tag")
         }
 
         return binding.root

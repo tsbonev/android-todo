@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+>
+
+    <data>
+        <variable name="toDoAdd" type="com.tsbonev.todo.core.ui.fragment.ToDoAddRequest"/>
+    </data>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+        <EditText
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:inputType="text"
+                android:text="@string/do_the_laundry"
+                android:hint="@string/what_to_do"/>
+
+
+        <TextView
+                android:id="@+id/date_picked"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@{toDoAdd.date}"/>
+        <Button
+                android:id="@+id/date_picker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/pick_date"/>
+
+        <TextView
+                android:id="@+id/time_picked"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@{toDoAdd.time}"/>
+        <Button
+                android:id="@+id/time_picker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/pick_time"
+                app:layout_constraintTop_toBottomOf="@+id/time_picked"/>
+
+        <Button android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:id="@+id/create_todo_btn"
+        android:text="@string/create"/>
+
+        <Button android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:id="@+id/create_dueDateLess_todo_btn"
+                android:text="@string/create_with_no_due_date"/>
+
+    </LinearLayout>
+
+</layout>

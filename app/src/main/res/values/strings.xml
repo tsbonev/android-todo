@@ -3,4 +3,10 @@
     <string name="todo_content">Do laundry.</string>
     <string name="todo_due_date_prefix">Due in</string>
     <string name="todo_due_date">24h</string>
+    <string name="what_to_do">What to do</string>
+    <string name="pick_date">Pick date</string>
+    <string name="pick_time">Pick time</string>
+    <string name="create">Create</string>
+    <string name="create_with_no_due_date">Create with no due date</string>
+    <string name="do_the_laundry">Do the laundry</string>
 </resources>
